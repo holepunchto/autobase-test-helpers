@@ -7,7 +7,7 @@ function eventFlush () {
 async function downloadAll (bases, flush = eventFlush) {
   do {
     await flush()
-    await Promise.all(bases.map(downloadAllWriters, flush))
+    await Promise.all(bases.map((b) => downloadAllWriters(b, flush)))
     await flush()
   } while (!synced(bases))
 }
