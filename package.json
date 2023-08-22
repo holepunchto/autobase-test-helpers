@@ -1,0 +1,18 @@
+{
+  "name": "autobase-test-helpers",
+  "version": "0.0.0",
+  "description": "Helpers when writing tests for an Autobased application",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/holepunchto/autobase-test-helpers.git"
+  },
+  "author": "Holepunch",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holepunchto/autobase-test-helpers/issues"
+  },
+  "homepage": "https://github.com/holepunchto/autobase-test-helpers"
+}
