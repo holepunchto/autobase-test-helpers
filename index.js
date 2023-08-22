@@ -9,10 +9,10 @@ async function downloadAll (bases, flush = eventFlush) {
     await flush()
     await Promise.all(bases.map((b) => downloadAllWriters(b, flush)))
     await flush()
-  } while (!synced(bases))
+  } while (!downloaded(bases))
 }
 
-function synced (bases) {
+function downloaded (bases) {
   for (let i = 0; i < bases.length; i++) {
     for (const w of bases[i].writers) {
       if (w.core.length !== w.core.contiguousLength) return false
