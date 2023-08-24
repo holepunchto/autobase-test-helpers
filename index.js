@@ -2,11 +2,52 @@ module.exports = {
   eventFlush,
   replicate,
   downloadAll,
-  downloaded
+  downloaded,
+  sync,
+  synced
 }
 
 function eventFlush () {
   return new Promise(resolve => setImmediate(resolve))
+}
+
+async function sync (bases) {
+  for (const base of bases) {
+    if (!base.opened) await base.ready()
+  }
+
+  return new Promise((resolve) => {
+    for (const base of bases) base.on('update', check)
+    check()
+
+    function check () {
+      if (synced(bases)) {
+        for (const base of bases) base.off('update', check)
+        resolve()
+      }
+    }
+  })
+}
+
+function synced (bases) {
+  const first = bases[0]
+  for (let i = 1; i < bases.length; i++) {
+    if (!same(first, bases[i])) return false
+  }
+  return true
+}
+
+function same (a, b) {
+  const h1 = a.heads()
+  const h2 = b.heads()
+  if (h1.length !== h2.length) return false
+  for (let i = 0; i < h1.length; i++) {
+    const h1i = h1[i]
+    const h2i = h2[i]
+    if (!h1i.key.equals(h2i.key)) return false
+    if (h1i.length !== h2i.length) return false
+  }
+  return true
 }
 
 async function downloadAll (bases, flush = eventFlush) {
