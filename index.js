@@ -1,4 +1,9 @@
-module.exports = { downloadAll, eventFlush }
+module.exports = {
+  eventFlush,
+  replicate,
+  downloadAll,
+  downloaded
+}
 
 function eventFlush () {
   return new Promise(resolve => setImmediate(resolve))
@@ -19,6 +24,37 @@ function downloaded (bases) {
     }
   }
   return true
+}
+
+function replicate (bases) {
+  const streams = []
+  const missing = bases.slice()
+
+  while (missing.length) {
+    const a = missing.pop()
+
+    for (const b of missing) {
+      const s1 = a.store.replicate(true)
+      const s2 = b.store.replicate(false)
+
+      s1.on('error', () => {})
+      s2.on('error', () => {})
+
+      s1.pipe(s2).pipe(s1)
+
+      streams.push(s1)
+      streams.push(s2)
+    }
+  }
+
+  return close
+
+  function close () {
+    return Promise.all(streams.map(s => {
+      s.destroy()
+      return new Promise(resolve => s.on('close', resolve))
+    }))
+  }
 }
 
 async function downloadAllWriters (base, flush = eventFlush) {
