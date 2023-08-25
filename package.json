@@ -3,8 +3,9 @@
   "version": "2.0.0",
   "description": "Helpers when writing tests for an Autobased application",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "b4a": "^1.6.4"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/holepunchto/autobase-test-helpers.git"
