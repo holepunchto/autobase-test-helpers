@@ -1,30 +1,36 @@
 module.exports = {
   eventFlush,
   replicate,
-  downloadAll,
-  downloaded,
   sync,
-  synced
+  synced,
+  replicateAndSync
 }
 
 function eventFlush () {
   return new Promise(resolve => setImmediate(resolve))
 }
 
+async function replicateAndSync (bases) {
+  const done = replicate(bases)
+  await sync(bases)
+  done()
+}
+
 async function sync (bases) {
   for (const base of bases) {
-    if (!base.opened) await base.ready()
+    await base.update()
   }
+
+  if (bases.length === 1) return
 
   return new Promise((resolve) => {
     for (const base of bases) base.on('update', check)
     check()
 
     function check () {
-      if (synced(bases)) {
-        for (const base of bases) base.off('update', check)
-        resolve()
-      }
+      if (!synced(bases)) return
+      for (const base of bases) base.off('update', check)
+      resolve()
     }
   })
 }
@@ -38,6 +44,8 @@ function synced (bases) {
 }
 
 function same (a, b) {
+  if (a.updating || b.updating) return false
+
   const h1 = a.heads()
   const h2 = b.heads()
   if (h1.length !== h2.length) return false
@@ -75,8 +83,8 @@ function replicate (bases) {
     const a = missing.pop()
 
     for (const b of missing) {
-      const s1 = a.store.replicate(true)
-      const s2 = b.store.replicate(false)
+      const s1 = a.replicate(true)
+      const s2 = b.replicate(false)
 
       s1.on('error', () => {})
       s2.on('error', () => {})

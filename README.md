@@ -9,9 +9,9 @@ npm install autobase-test-helpers
 ## Usage
 
 ``` js
-const { downloadAll } = require('autobase-test-helpers')
+const { sync } = require('autobase-test-helpers')
 
-await downloadAll(bases) // expects replication to have been set up
+await sync(bases) // expects replication to have been set up
 ```
 
 ## License
