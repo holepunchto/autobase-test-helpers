@@ -29,7 +29,11 @@ async function sync (bases) {
     for (const base of bases) base.on('update', check)
     check()
 
-    function check () {
+    async function check () {
+      if (!synced(bases)) return
+      for (const base of bases) {
+        await base.update()
+      }
       if (!synced(bases)) return
       for (const base of bases) base.off('update', check)
       resolve()
