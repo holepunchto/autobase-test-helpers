@@ -79,8 +79,12 @@ function replicate (bases) {
       const s1 = a.replicate(true)
       const s2 = b.replicate(false)
 
-      s1.on('error', () => {})
-      s2.on('error', () => {})
+      s1.on('error', (err) => {
+        if (err.code) console.log('autobase replicate error:', err.stack)
+      })
+      s2.on('error', () => {
+        if (err.code) console.log('autobase replicate error:', err.stack)
+      })
 
       s1.pipe(s2).pipe(s1)
 
