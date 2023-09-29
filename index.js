@@ -82,7 +82,7 @@ function replicate (bases) {
       s1.on('error', (err) => {
         if (err.code) console.log('autobase replicate error:', err.stack)
       })
-      s2.on('error', () => {
+      s2.on('error', (err) => {
         if (err.code) console.log('autobase replicate error:', err.stack)
       })
 
