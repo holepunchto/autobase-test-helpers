@@ -75,7 +75,7 @@ function compareStreamState (a, b, bases) {
   // match corresponding writers on each side
   const cores = [...a.activeWriters.map].reduce((acc, [k, v]) => {
     const r = b.activeWriters.map.get(k)
-    if (r) acc.push(v.core.length < r.core.length ? [v.core, r.core] : [r.core, v.core])
+    if (r && r.core.length !== v.core.length) acc.push(v.core.length < r.core.length ? [v.core, r.core] : [r.core, v.core])
     return acc
   }, [])
 
