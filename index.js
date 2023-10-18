@@ -44,7 +44,10 @@ async function sync (bases) {
 function synced (bases) {
   const first = bases[0]
   for (let i = 1; i < bases.length; i++) {
-    if (!same(first, bases[i])) return false
+    if (!same(first, bases[i])) {
+      compareStreamState(first, bases[i], bases)
+      return false
+    }
   }
   return true
 }
@@ -66,6 +69,57 @@ function same (a, b) {
   }
 
   return true
+}
+
+function compareStreamState (a, b, bases) {
+  // match corresponding writers on each side
+  const cores = [...a.activeWriters.map].reduce((acc, [k, v]) => {
+    const r = b.activeWriters.map.get(k)
+    if (r) acc.push(v.core.length < r.core.length ? [v.core, r.core] : [r.core, v.core])
+    return acc
+  }, [])
+
+  for (const [behind, ahead] of cores) {
+    const request = behind.replicator._inflight._requests.slice().pop()
+
+    if (!request) {
+      // probably means the writer core didn't wake up
+      continue
+    }
+
+    const localPeer = request.peer
+
+    let remote
+    for (const base of bases) {
+      for (const { stream } of base.local.replicator._attached) {
+        if (b4a.equals(stream.publicKey, localPeer.stream.remotePublicKey)) {
+          remote = base.local.replicator
+        }
+        break
+      }
+      if (remote) break
+    }
+
+    if (!remote) {
+      // probably means the writer core didn't wake up
+      continue
+    }
+
+    let remotePeer = null
+    for (remotePeer of remote.peers) {
+      if (b4a.equals(remotePeer.remotePublicKey, localPeer.stream.publicKey)) break
+      remotePeer = null
+    }
+
+    if (!remotePeer) {
+      continue
+    }
+
+    const localChannel = localPeer.channel
+    const remoteChannel = remotePeer.channel
+
+    /* stream state differs on either side */
+  }
 }
 
 function replicate (bases) {
