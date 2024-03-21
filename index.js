@@ -25,8 +25,12 @@ async function sync (bases) {
 
   if (bases.length === 1) return
 
-  return new Promise((resolve) => {
-    for (const base of bases) base.on('update', check)
+  return new Promise((resolve, reject) => {
+    for (const base of bases) {
+      base.on('update', check)
+      base.on('error', shutdown)
+    }
+
     check()
 
     async function check () {
@@ -35,8 +39,17 @@ async function sync (bases) {
         await base.update()
       }
       if (!synced(bases)) return
-      for (const base of bases) base.off('update', check)
-      resolve()
+      shutdown()
+    }
+
+    function shutdown (err) {
+      for (const base of bases) {
+        base.off('update', check)
+        base.off('error', shutdown)
+      }
+
+      if (err) reject(err)
+      else resolve()
     }
   })
 }
