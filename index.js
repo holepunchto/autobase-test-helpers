@@ -37,6 +37,8 @@ async function sync (bases) {
       if (!synced(bases)) return
       for (const base of bases) {
         await base.update()
+        // TODO: HACk!! remove when autobase is fixed
+        base.system.requestWakeup()
       }
       if (!synced(bases)) return
       shutdown()
