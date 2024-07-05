@@ -18,9 +18,10 @@ async function replicateAndSync (bases) {
   await done()
 }
 
-async function sync (bases) {
+async function sync (bases, { allowApplyErrors = false } = {}) {
+  console.log('allow apply errors?', allowApplyErrors)
   for (const base of bases) {
-    await base.update()
+    await allowApplyErrors ? base.update().catch(noop) : base.update()
   }
 
   if (bases.length === 1) return
@@ -28,7 +29,9 @@ async function sync (bases) {
   return new Promise((resolve, reject) => {
     for (const base of bases) {
       base.on('update', check)
-      base.on('error', shutdown)
+      if (!allowApplyErrors) {
+        base.on('error', shutdown)
+      }
     }
 
     check()
@@ -36,7 +39,7 @@ async function sync (bases) {
     async function check () {
       if (!synced(bases)) return
       for (const base of bases) {
-        await base.update()
+        await allowApplyErrors ? base.update().catch(noop) : base.update()
         // TODO: HACk!! remove when autobase is fixed
         base.system.requestWakeup()
       }
@@ -117,3 +120,5 @@ function replicate (bases) {
     }))
   }
 }
+
+function noop () {}
