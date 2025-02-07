@@ -64,6 +64,7 @@ function synced (bases) {
 
 function same (a, b) {
   if (a.updating || b.updating) return false
+  if (a.signedLength !== b.signedLength) return false
 
   const h1 = a.heads()
   const h2 = b.heads()
