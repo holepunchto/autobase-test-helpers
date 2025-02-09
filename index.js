@@ -26,6 +26,9 @@ async function sync (bases) {
   if (bases.length === 1) return
 
   return new Promise((resolve, reject) => {
+    let done = false
+    let checks = 0
+
     for (const base of bases) {
       base.on('update', check)
       base.on('error', shutdown)
@@ -34,15 +37,29 @@ async function sync (bases) {
     check()
 
     async function check () {
-      if (!synced(bases)) return
+      checks++
+      if (!(await same())) return mbShutdown()
       for (const base of bases) {
         await base.update()
       }
-      if (!synced(bases)) return
+      if (!(await same())) return mbShutdown()
       shutdown()
     }
 
+    function mbShutdown () {
+      if (done) return shutdown()
+      checks--
+    }
+
+    async function same () {
+      return synced(bases) && await sameHash(bases)
+    }
+
     function shutdown (err) {
+      checks--
+      done = true
+      if (checks !== 0) return
+
       for (const base of bases) {
         base.off('update', check)
         base.off('error', shutdown)
@@ -52,6 +69,16 @@ async function sync (bases) {
       else resolve()
     }
   })
+}
+
+async function sameHash (bases) {
+  const first = bases[0]
+  const h1 = await first.hash()
+  for (let i = 1; i < bases.length; i++) {
+    const h2 = await bases[i].hash()
+    if (!b4a.equals(h1, h2)) return false
+  }
+  return true
 }
 
 function synced (bases) {
