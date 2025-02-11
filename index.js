@@ -58,7 +58,7 @@ async function sync (bases) {
     function shutdown (err) {
       checks--
       done = true
-      if (checks !== 0) return
+      if (checks !== 0 && !err) return
 
       for (const base of bases) {
         base.off('update', check)
