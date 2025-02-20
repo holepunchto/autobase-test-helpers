@@ -40,6 +40,7 @@ async function sync (bases) {
       checks++
       if (!(await same())) return mbShutdown()
       for (const base of bases) {
+        if (base.interrupted) return shutdown(base.interrupted)
         await base.update()
       }
       if (!(await same())) return mbShutdown()
