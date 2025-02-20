@@ -38,9 +38,11 @@ async function sync (bases) {
 
     async function check () {
       checks++
+      for (const base of bases) {
+        if (base.interrupted) return shutdown(new Error('base was interrupted, reason at base.interrupted'))
+      }
       if (!(await same())) return mbShutdown()
       for (const base of bases) {
-        if (base.interrupted) return shutdown(base.interrupted)
         await base.update()
       }
       if (!(await same())) return mbShutdown()
