@@ -12,13 +12,13 @@ function eventFlush () {
   return new Promise(resolve => setImmediate(resolve))
 }
 
-async function replicateAndSync (bases, checkHash) {
+async function replicateAndSync (bases, opts) {
   const done = replicate(bases)
-  await sync(bases, checkHash)
+  await sync(bases, opts)
   await done()
 }
 
-async function sync (bases, checkHash = true) {
+async function sync (bases, { checkHash = true } = {}) {
   for (const base of bases) {
     await base.update()
   }
