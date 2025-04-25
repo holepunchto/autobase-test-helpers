@@ -1,6 +1,6 @@
 {
   "name": "autobase-test-helpers",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Helpers when writing tests for an Autobased application",
   "main": "index.js",
   "dependencies": {
