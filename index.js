@@ -12,13 +12,13 @@ function eventFlush () {
   return new Promise(resolve => setImmediate(resolve))
 }
 
-async function replicateAndSync (bases) {
+async function replicateAndSync (bases, checkHash) {
   const done = replicate(bases)
-  await sync(bases)
+  await sync(bases, checkHash)
   await done()
 }
 
-async function sync (bases) {
+async function sync (bases, checkHash = true) {
   for (const base of bases) {
     await base.update()
   }
@@ -41,11 +41,11 @@ async function sync (bases) {
       for (const base of bases) {
         if (base.interrupted) return shutdown(new Error('base was interrupted, reason at base.interrupted'))
       }
-      if (!(await same())) return mbShutdown()
+      if (!(await same(checkHash))) return mbShutdown()
       for (const base of bases) {
         await base.update()
       }
-      if (!(await same())) return mbShutdown()
+      if (!(await same(checkHash))) return mbShutdown()
       shutdown()
     }
 
@@ -54,8 +54,8 @@ async function sync (bases) {
       checks--
     }
 
-    async function same () {
-      return synced(bases) && await sameHash(bases)
+    async function same (checkHash) {
+      return synced(bases) && await sameHash(bases, checkHash)
     }
 
     function shutdown (err) {
@@ -74,7 +74,8 @@ async function sync (bases) {
   })
 }
 
-async function sameHash (bases) {
+async function sameHash (bases, check) {
+  if (!check) return true
   const first = bases[0]
   const h1 = await first.hash()
   for (let i = 1; i < bases.length; i++) {
