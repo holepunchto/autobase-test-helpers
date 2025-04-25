@@ -79,6 +79,7 @@ async function sameHash (bases, check) {
   const first = bases[0]
   const h1 = await first.hash()
   for (let i = 1; i < bases.length; i++) {
+    if (bases[i].signedLength !== first.signedLength) return false
     const h2 = await bases[i].hash()
     if (!b4a.equals(h1, h2)) return false
   }
@@ -95,7 +96,6 @@ function synced (bases) {
 
 function same (a, b) {
   if (a.updating || b.updating) return false
-  if (a.signedLength !== b.signedLength) return false
 
   const h1 = a.heads()
   const h2 = b.heads()
